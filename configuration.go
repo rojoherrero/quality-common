@@ -69,7 +69,7 @@ func (cfg *Configuration) ConnectToPostgres() *sqlx.DB {
 	return db
 }
 
-func (cfg *Configuration)  connectToNats() *nats.Conn {
+func (cfg *Configuration) ConnectToNats() *nats.Conn {
 	// nats://localhost:4222
 	url := fmt.Sprintf("nats://%s:%s", cfg.Messaging.Host, cfg.Messaging.Port)
 

@@ -49,52 +49,42 @@ func GetDataSources(prefix string) (*pgx.ConnPool, *nats.Conn) {
 
 func getKVClient() *consul.KV {
 	client, e := consul.NewClient(consul.DefaultConfig())
-	if e != nil {
-		panic(e)
-	}
+	panicIfNil(e)
 	return client.KV()
 }
 
 func connectToPostgres(prefix string, kv *consul.KV) *pgx.ConnPool {
 	// username:password@protocol(address)/dbname?param=value
 	connCfg := getPostgresConnectionData(prefix, kv)
-
-	var db *pgx.ConnPool
-	var e error
-
-	if db, e = pgx.NewConnPool(pgx.ConnPoolConfig{ConnConfig: connCfg}); e != nil {
-		panic(e)
-	}
+	db, e := pgx.NewConnPool(pgx.ConnPoolConfig{ConnConfig: connCfg})
+	panicIfNil(e)
 	return db
 }
 
 func connectToNats(kv *consul.KV) *nats.Conn {
 	// nats://localhost:4222
 	url := getNATSConnectionData(kv)
-	var nc *nats.Conn
-	var e error
-
-	if nc, e = nats.Connect(url); e != nil {
-		panic(e)
-	}
+	nc, e := nats.Connect(url)
+	panicIfNil(e)
 	return nc
 }
 
 func getPostgresConnectionData(prefix string, kv *consul.KV) pgx.ConnConfig {
-	host, _, _ := kv.Get(prefix+"/pg/host", nil)
-	port, _, _ := kv.Get(prefix+"/pg/portT", nil)
-	user, _, _ := kv.Get(prefix+"/pg/user", nil)
-	pwd, _, _ := kv.Get(prefix+"/pg/pwd", nil)
-	dBName, _, _ := kv.Get(prefix+"/pg/dbName", nil)
+	host, _, e := kv.Get(prefix+"/pg/host", nil)
+	panicIfNil(e)
+	port, _, e := kv.Get(prefix+"/pg/port", nil)
+	panicIfNil(e)
+	user, _, e := kv.Get(prefix+"/pg/user", nil)
+	panicIfNil(e)
+	pwd, _, e := kv.Get(prefix+"/pg/pwd", nil)
+	panicIfNil(e)
+	dBName, _, e := kv.Get(prefix+"/pg/dbName", nil)
+	panicIfNil(e)
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		string(host.Value), string(port.Value), string(user.Value), string(pwd.Value), string(dBName.Value))
 
-	var config pgx.ConnConfig
-	var e error
-
-	if config, e = pgx.ParseDSN(dsn); e != nil {
-		panic(e)
-	}
+	config, e := pgx.ParseDSN(dsn)
+	panicIfNil(e)
 
 	return config
 
@@ -103,6 +93,11 @@ func getPostgresConnectionData(prefix string, kv *consul.KV) pgx.ConnConfig {
 func getNATSConnectionData(kv *consul.KV) string {
 	host, _, _ := kv.Get("nats/host", nil)
 	port, _, _ := kv.Get("nats/port", nil)
-
 	return fmt.Sprintf("nats://%s:%s", string(host.Value), string(port.Value))
+}
+
+func panicIfNil(e error){
+	if e != nil {
+		panic(e)
+	}
 }

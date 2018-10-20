@@ -52,8 +52,7 @@ func getKVClient() *consul.KV {
 	if e != nil {
 		panic(e)
 	}
-	kv := client.KV()
-	return kv
+	return client.KV()
 }
 
 func connectToPostgres(prefix string, kv *consul.KV) *pgx.ConnPool {

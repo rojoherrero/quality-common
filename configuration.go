@@ -82,11 +82,11 @@ func connectToNats(kv *consul.KV) *nats.Conn {
 }
 
 func getPostgresConnectionData(prefix string, kv *consul.KV) pgx.ConnConfig {
-	host, _, _ := kv.Get(prefix+"_PG_HOST", nil)
-	port, _, _ := kv.Get(prefix+"_PG_PORT", nil)
-	user, _, _ := kv.Get(prefix+"_PG_USER", nil)
-	pwd, _, _ := kv.Get(prefix+"_PG_PWD", nil)
-	dBName, _, _ := kv.Get(prefix+"_PG_DBNAME", nil)
+	host, _, _ := kv.Get(prefix+"/pg/host", nil)
+	port, _, _ := kv.Get(prefix+"/pg/portT", nil)
+	user, _, _ := kv.Get(prefix+"/pg/user", nil)
+	pwd, _, _ := kv.Get(prefix+"/pg/pwd", nil)
+	dBName, _, _ := kv.Get(prefix+"/pg/dbName", nil)
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		string(host.Value), string(port.Value), string(user.Value), string(pwd.Value), string(dBName.Value))
 
@@ -102,8 +102,8 @@ func getPostgresConnectionData(prefix string, kv *consul.KV) pgx.ConnConfig {
 }
 
 func getNATSConnectionData(kv *consul.KV) string {
-	host, _, _ := kv.Get("NATS_HOST", nil)
-	port, _, _ := kv.Get("NATS_PORT", nil)
+	host, _, _ := kv.Get("nats/host", nil)
+	port, _, _ := kv.Get("nats/port", nil)
 
 	return fmt.Sprintf("nats://%s:%s", string(host.Value), string(port.Value))
 }

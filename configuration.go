@@ -2,25 +2,32 @@ package common
 
 import (
 	"fmt"
-	"github.com/jackc/pgx"
 	"log"
 
 	consul "github.com/hashicorp/consul/api"
+	"github.com/jackc/pgx"
 	"github.com/nats-io/go-nats"
 	"github.com/spf13/viper"
 )
 
 type Configuration struct {
-	Server  *Server
-	Logging *Logging
+	cc     *consul.Client
+	prefix string
 }
 
 type Server struct {
+	Host string
 	Port string
 }
 
 type Logging struct {
 	Level string
+}
+
+func InitConfigService(prefix string) *Configuration {
+	cc, e := consul.NewClient(consul.DefaultConfig())
+	panicIfNil(e)
+	return &Configuration{cc: cc, prefix: prefix}
 }
 
 func GetConfiguration(name, path string) *Configuration {
@@ -40,45 +47,38 @@ func GetConfiguration(name, path string) *Configuration {
 }
 
 // GetDataSources returns the postgres and nats connections
-func GetDataSources(prefix string) (*pgx.ConnPool, *nats.Conn) {
-	kv := getKVClient()
-	db := connectToPostgres(prefix, kv)
-	nc := connectToNats(kv)
+func (cfg *Configuration) GetDataSources() (*pgx.ConnPool, *nats.Conn) {
+	db := cfg.connectToPostgres()
+	nc := cfg.connectToNats()
 	return db, nc
 }
 
-func getKVClient() *consul.KV {
-	client, e := consul.NewClient(consul.DefaultConfig())
-	panicIfNil(e)
-	return client.KV()
-}
-
-func connectToPostgres(prefix string, kv *consul.KV) *pgx.ConnPool {
+func (cfg *Configuration) connectToPostgres() *pgx.ConnPool {
 	// username:password@protocol(address)/dbname?param=value
-	connCfg := getPostgresConnectionData(prefix, kv)
+	connCfg := cfg.getPostgresConnectionData()
 	db, e := pgx.NewConnPool(pgx.ConnPoolConfig{ConnConfig: connCfg})
 	panicIfNil(e)
 	return db
 }
 
-func connectToNats(kv *consul.KV) *nats.Conn {
+func (cfg *Configuration) connectToNats() *nats.Conn {
 	// nats://localhost:4222
-	url := getNATSConnectionData(kv)
+	url := cfg.getNATSConnectionData()
 	nc, e := nats.Connect(url)
 	panicIfNil(e)
 	return nc
 }
 
-func getPostgresConnectionData(prefix string, kv *consul.KV) pgx.ConnConfig {
-	host, _, e := kv.Get(prefix+"/pg/host", nil)
+func (cfg *Configuration) getPostgresConnectionData() pgx.ConnConfig {
+	host, _, e := cfg.cc.KV().Get(cfg.prefix+"/pg/host", nil)
 	panicIfNil(e)
-	port, _, e := kv.Get(prefix+"/pg/port", nil)
+	port, _, e := cfg.cc.KV().Get(cfg.prefix+"/pg/port", nil)
 	panicIfNil(e)
-	user, _, e := kv.Get(prefix+"/pg/user", nil)
+	user, _, e := cfg.cc.KV().Get(cfg.prefix+"/pg/user", nil)
 	panicIfNil(e)
-	pwd, _, e := kv.Get(prefix+"/pg/pwd", nil)
+	pwd, _, e := cfg.cc.KV().Get(cfg.prefix+"/pg/pwd", nil)
 	panicIfNil(e)
-	dBName, _, e := kv.Get(prefix+"/pg/dbName", nil)
+	dBName, _, e := cfg.cc.KV().Get(cfg.prefix+"/pg/dbName", nil)
 	panicIfNil(e)
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		string(host.Value), string(port.Value), string(user.Value), string(pwd.Value), string(dBName.Value))
@@ -90,13 +90,13 @@ func getPostgresConnectionData(prefix string, kv *consul.KV) pgx.ConnConfig {
 
 }
 
-func getNATSConnectionData(kv *consul.KV) string {
-	host, _, _ := kv.Get("nats/host", nil)
-	port, _, _ := kv.Get("nats/port", nil)
+func (cfg *Configuration) getNATSConnectionData() string {
+	host, _, _ := cfg.cc.KV().Get("nats/host", nil)
+	port, _, _ := cfg.cc.KV().Get("nats/port", nil)
 	return fmt.Sprintf("nats://%s:%s", string(host.Value), string(port.Value))
 }
 
-func panicIfNil(e error){
+func panicIfNil(e error) {
 	if e != nil {
 		panic(e)
 	}

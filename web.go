@@ -21,6 +21,7 @@ func JSON(res http.ResponseWriter, status int, data []byte) error {
 	res.WriteHeader(status)
 	_, e = res.Write(body)
 	if e != nil {
+		res.WriteHeader(http.StatusInternalServerError)
 		return e
 	}
 	return nil

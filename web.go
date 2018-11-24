@@ -7,7 +7,7 @@ import (
 
 const (
 	contentType = "Content-Type"
-	jsonUTF8    = "application/json; charset=UTF-8"
+	jsonUTF8    = "application/dto; charset=UTF-8"
 )
 
 func JSON(res http.ResponseWriter, status int, data []byte) error {

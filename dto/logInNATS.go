@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 )
 
-type LogInRequestDTO struct {
+type LogInRequestNATS struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-type LogInResponseDTO struct {
+type LogInResponseNATS struct {
 	UsernameOK bool `json:"usernameOK"`
 	PasswordOK *bool `json:"passwordOK"`
 	Roles []string `json:"roles"`
@@ -17,22 +17,22 @@ type LogInResponseDTO struct {
 	FullName *string `json:"fullName"`
 }
 
-func UnmarshalLogInResponseDTO(data []byte) (LogInResponseDTO, error) {
-	var r LogInResponseDTO
+func UnmarshalLogInResponseNATS(data []byte) (LogInResponseNATS, error) {
+	var r LogInResponseNATS
 	e := json.Unmarshal(data, &r)
 	return r, e
 }
 
-func (r *LogInResponseDTO) Marshal() ([]byte, error) {
+func (r *LogInResponseNATS) Marshal() ([]byte, error) {
 	return json.Marshal(r)
 }
 
-func UnmarshalLogInRequestDTO(data []byte) (LogInRequestDTO, error) {
-	var r LogInRequestDTO
+func UnmarshalLogInRequestNATS(data []byte) (LogInRequestNATS, error) {
+	var r LogInRequestNATS
 	e := json.Unmarshal(data, &r)
 	return r, e
 }
 
-func (r *LogInRequestDTO) Marshal() ([]byte, error) {
+func (r *LogInRequestNATS) Marshal() ([]byte, error) {
 	return json.Marshal(r)
 }

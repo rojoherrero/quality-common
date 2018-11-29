@@ -10,18 +10,18 @@ const (
 	jsonUTF8    = "application/json; charset=UTF-8"
 )
 
-func JSON(res http.ResponseWriter, status int, data []byte) error {
+func JSON(w http.ResponseWriter, status int, data interface{}) error {
 	body, e := json.Marshal(data)
 	if e != nil {
-		res.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return e
 	}
 
-	res.Header().Set(contentType, jsonUTF8)
-	res.WriteHeader(status)
-	_, e = res.Write(body)
+	w.Header().Set(contentType, jsonUTF8)
+	w.WriteHeader(status)
+	_, e = w.Write(body)
 	if e != nil {
-		res.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return e
 	}
 	return nil

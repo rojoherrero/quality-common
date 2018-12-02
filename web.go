@@ -1,7 +1,6 @@
 package common
 
 import (
-	"encoding/json"
 	"net/http"
 )
 
@@ -10,16 +9,10 @@ const (
 	jsonUTF8    = "application/json; charset=UTF-8"
 )
 
-func JSON(w http.ResponseWriter, status int, data interface{}) error {
-	body, e := json.Marshal(data)
-	if e != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return e
-	}
-
+func JSON(w http.ResponseWriter, status int, data []byte) error {
 	w.Header().Set(contentType, jsonUTF8)
 	w.WriteHeader(status)
-	_, e = w.Write(body)
+	_, e := w.Write(data)
 	if e != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return e

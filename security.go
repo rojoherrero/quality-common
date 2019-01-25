@@ -22,6 +22,7 @@ func (r *LogInRequest) Marshal() ([]byte, error) {
 
 // LogInResponse holds the resulto of the authetication
 type LogInResponse struct {
+	GeneralError  bool     `json:"generalError,omitempty"`
 	UserMatch     bool     `json:"userMatch,omitempty"`
 	PasswordMatch bool     `json:"passwordMatch,omitempty"`
 	Username      string   `json:"username,omitempty"`
@@ -41,3 +42,8 @@ func UnmarshalLogInResponse(data []byte) (LogInResponse, error) {
 func (r *LogInResponse) Marshal() ([]byte, error) {
 	return json.Marshal(r)
 }
+
+const (
+	// LogInService constant that holds the value os the nats route
+	LogInService = "logIn.security.service"
+)

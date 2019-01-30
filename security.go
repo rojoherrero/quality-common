@@ -1,6 +1,8 @@
 package common
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // LogInRequest holds user credentials
 type LogInRequest struct {
@@ -22,13 +24,12 @@ func (r *LogInRequest) Marshal() ([]byte, error) {
 
 // LogInResponse holds the resulto of the authetication
 type LogInResponse struct {
-	GeneralError  bool     `json:"generalError,omitempty"`
-	UserMatch     bool     `json:"userMatch,omitempty"`
-	PasswordMatch bool     `json:"passwordMatch,omitempty"`
-	Username      string   `json:"username,omitempty"`
-	Fullname      string   `json:"fullname,omitempty"`
-	Department    string   `json:"department,omitempty"`
-	Roles         []string `json:"roles,omitempty"`
+	// ResponseStatus save status as
+	ResponseStatus int      `json:"responseStatus,omitempty"`
+	Username       string   `json:"username,omitempty"`
+	Fullname       string   `json:"fullname,omitempty"`
+	Department     string   `json:"department,omitempty"`
+	Roles          []string `json:"roles,omitempty"`
 }
 
 // UnmarshalLogInResponse Unmarshal an array of bytes to the struct
@@ -45,5 +46,5 @@ func (r *LogInResponse) Marshal() ([]byte, error) {
 
 const (
 	// LogInService constant that holds the value os the nats route
-	LogInService = "logIn.security.service"
+	LogInService string = "logIn.security.service"
 )

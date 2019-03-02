@@ -1,0 +1,24 @@
+syntax="proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.routeguide";
+option java_outer_classname = "RouteGuideProto";
+
+package security;
+
+service Security {
+    rpc GetUserInfo(LogInRequest) returns (LogInResponse);
+}
+
+message LogInRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message LogInResponse {
+    int64 status = 1;
+    string username = 2;
+    string fullname = 3;
+    repeated string departments = 4;
+    repeated string roles = 5;   
+}
